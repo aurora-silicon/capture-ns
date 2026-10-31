@@ -5,6 +5,8 @@ import argparse
 import json
 from pathlib import Path
 import subprocess
+import numpy as np
+from recurrent import lstm
 
 
 def main():
@@ -15,6 +17,13 @@ def main():
     a = p.parse_args()
     a.output.mkdir(parents=True, exist_ok=True)
     probes = [(path.parent.name, path) for path in sorted(a.models.glob("*/cell.mil"))]
+    # This fixture tests LSTM lowering, not a third denoising model.
+    rng = np.random.default_rng(3654)
+    W, R, B = [rng.normal(0, .1, shape).astype(np.float16).astype(np.float32)
+               for shape in ((44, 7), (44, 11), (88,))]
+    fixture = a.output / "synthetic-lstm-source"
+    lstm(W, R, B, pad_to=512).write(fixture, runtime_vectors=True)
+    probes.append(("synthetic-lstm-pad512", fixture / "cell.mil"))
     for channels in (24, 48, 96, 256, 512):
         for op in ("sigmoid", "tanh"):
             name = f"{op}-{channels}"
