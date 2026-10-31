@@ -21,3 +21,15 @@ git diff main...HEAD -- Makefile tools/aurora-capture-ns src include
 The launcher's only filesystem writes are in its private temporary directory. Its PipeWire client creates the two transient capture-filter nodes described above. The only subprocesses are the read-only `pw-dump` and the dedicated `pipewire` filter client. Build/evaluation scripts write their own build and result directories and download licensed public sources. They neither connect to a reference Mac nor open an audio device.
 
 Operational speaker protection remains outside this source's graph and must remain active and governing during any lead capture test. The test plan never needs sound output, protection changes, UCM edits or playback graph inspection/reconfiguration.
+
+Optional `AURORA_NS_STATUS=/absolute/private/runtime/status.json` enables a
+single-instance status reporter inside the dedicated filter client. It writes
+only engine/model identity, PID, update time, processed-block count and the
+late/dropped/error counters. No samples or source identity are written. A
+background thread publishes an atomic JSON replacement once a second; the
+audio callback only copies counters into atomics. Cleanup joins the thread and
+removes the status file. This is not a service or protection daemon. Use a
+private directory and a unique path for each client/instance; unset the variable
+to preserve the original no-status-file behavior. A requested but unwritable
+status path fails plugin initialization. PipeWire 1.6 exposes input controls,
+not these LADSPA output notify ports, through normal node properties.
