@@ -6,6 +6,7 @@ input/output. Each graph is stateless; a caller commits state only on success.
 The emitted MIL uses fp16 weights, matmul/add/mul/sigmoid/tanh/relu and reshapes.
 """
 from pathlib import Path
+import json
 import struct
 
 import numpy as np
@@ -45,16 +46,24 @@ class Graph:
             else: raise ValueError(op)
         return {name: v[name] for name in self.outputs}
 
-    def write(self, directory):
+    def write(self, directory, *, runtime_vectors=False):
         directory = Path(directory)
         directory.mkdir(parents=True, exist_ok=True)
         def typ(shape):
             return "tensor<fp16, [" + ",".join(map(str, shape)) + "]>"
-        args = ", ".join(f"{typ(shape)} {name}" for name, shape in self.inputs.items())
+        # H14 accepts arbitrary vector operands as input surfaces, but only
+        # the decoded 0.5 literal as an embedded scalar constant. Keep biases
+        # and +/-1 as fixed model feeds; matrix weights remain embedded.
+        fixed = {name: value for name, value in self.constants.items()
+                 if runtime_vectors and (name.startswith(("B", "C")) or name in ("one", "minus_one"))}
+        inputs = {**self.inputs, **{name: value.shape for name, value in fixed.items()}}
+        args = ", ".join(f"{typ(shape)} {name}" for name, shape in inputs.items())
         lines = ["program(1.3)", "[buildInfo = dict<string, string>({})]", "{", f"  func main<ios18>({args}) {{",
                  '    bool no_transpose = const()[name = string("no_transpose"), val = bool(false)];']
         blob = bytearray(64)
         for name, value in self.constants.items():
+            if name in fixed:
+                continue
             while len(blob) % 64: blob.append(0)
             offset = len(blob)
             payload = np.asarray(value, dtype="<f2").tobytes()
@@ -81,9 +90,30 @@ class Graph:
         (directory / "cell.mil").write_text("\n".join(lines) + "\n")
         (directory / "weights.bin").write_bytes(blob)
         np.savez(directory / "weights.npz", **self.constants)
+        np.savez(directory / "fixed-inputs.npz", **{name: value.astype(np.float16) for name, value in fixed.items()})
+        (directory / "interface.json").write_text(json.dumps({
+            "inputs": {name: list(shape) for name, shape in self.inputs.items()},
+            "fixed_inputs": {name: list(value.shape) for name, value in fixed.items()},
+            "outputs": self.outputs, "valid_sizes": getattr(self, "valid_sizes", {})
+        }, indent=2) + "\n")
 
 
-def gru(W, R, B=None, *, linear_before_reset=1, candidate="tanh"):
+def pad_parameters(W, R, B, gates, size):
+    H, I = R.shape[1], W.shape[1]
+    if size is None:
+        return W, R, B, I, H
+    if type(size) is not int or size < max(I, H):
+        raise ValueError("padding must cover the input and hidden sizes")
+    wp, rp, bp = np.zeros((gates*size, size), np.float32), np.zeros((gates*size, size), np.float32), np.zeros(2*gates*size, np.float32)
+    for gate in range(gates):
+        wp[gate*size:gate*size+H, :I] = W[gate*H:(gate+1)*H]
+        rp[gate*size:gate*size+H, :H] = R[gate*H:(gate+1)*H]
+    for gate in range(2*gates):
+        bp[gate*size:gate*size+H] = B[gate*H:(gate+1)*H]
+    return wp, rp, bp, size, size
+
+
+def gru(W, R, B=None, *, linear_before_reset=1, candidate="tanh", pad_to=None):
     W, R = np.asarray(W, np.float32), np.asarray(R, np.float32)
     H, I = R.shape[1], W.shape[1]
     if W.shape != (3*H, I) or R.shape != (3*H, H) or candidate not in ("tanh", "relu"):
@@ -91,7 +121,10 @@ def gru(W, R, B=None, *, linear_before_reset=1, candidate="tanh"):
     B = np.zeros(6*H, np.float32) if B is None else np.asarray(B, np.float32)
     if B.shape != (6*H,) or linear_before_reset not in (0, 1):
         raise ValueError("invalid GRU bias/reset mode")
+    original_I, original_H = I, H
+    W, R, B, I, H = pad_parameters(W, R, B, 3, pad_to)
     g = Graph({"x": (1, I), "h": (1, H)})
+    g.valid_sizes = {"input": original_I, "hidden": original_H}
     for index, gate in enumerate(("z", "r", "n")):
         g.constant("W"+gate, W[index*H:(index+1)*H].T)
         g.constant("R"+gate, R[index*H:(index+1)*H].T)
@@ -125,13 +158,16 @@ def gru(W, R, B=None, *, linear_before_reset=1, candidate="tanh"):
     return g
 
 
-def lstm(W, R, B=None):
+def lstm(W, R, B=None, *, pad_to=None):
     W, R = np.asarray(W, np.float32), np.asarray(R, np.float32)
     H, I = R.shape[1], W.shape[1]
     B = np.zeros(8*H, np.float32) if B is None else np.asarray(B, np.float32)
     if W.shape != (4*H, I) or R.shape != (4*H, H) or B.shape != (8*H,):
         raise ValueError("invalid LSTM weights")
+    original_I, original_H = I, H
+    W, R, B, I, H = pad_parameters(W, R, B, 4, pad_to)
     g = Graph({"x": (1, I), "h": (1, H), "c": (1, H)})
+    g.valid_sizes = {"input": original_I, "hidden": original_H}
     for index, gate in enumerate(("i", "o", "f", "g")):
         g.constant("W"+gate, W[index*H:(index+1)*H].T)
         g.constant("R"+gate, R[index*H:(index+1)*H].T)

@@ -62,6 +62,10 @@ def main():
                     directory = Path(member.name).stem + f"-cell-{index}"
                     graph.write(a.output / directory)
                     cell.update(emitted=True, directory=directory, primitives=dict(Counter(op for _, op, _, _ in graph.ops)))
+                    padded = (gru(W, R, B, linear_before_reset=attrs.get("linear_before_reset", 0), pad_to=512)
+                              if node.op_type == "GRU" else lstm(W, R, B, pad_to=512))
+                    padded.write(a.output / (directory + "-pad512"), runtime_vectors=True)
+                    cell["padded_directory"] = directory + "-pad512"
                 except (KeyError, ValueError) as error:
                     cell["reason"] = str(error)
                 entry["recurrent"].append(cell)
@@ -80,7 +84,10 @@ def main():
         B = np.concatenate((arrays[name+"_bias"], np.zeros(3*H, np.float32)))
         graph = gru(W, R, B, linear_before_reset=0, candidate="relu")
         graph.write(a.output / ("rnnoise-"+name))
+        padded = gru(W, R, B, linear_before_reset=0, candidate="relu", pad_to=512)
+        padded.write(a.output / ("rnnoise-"+name+"-pad512"), runtime_vectors=True)
         report["rnnoise_cells"].append({"name": name, "input": I, "hidden": H, "candidate": "relu",
+                                        "padded_directory": "rnnoise-"+name+"-pad512",
                                         "primitives": dict(Counter(op for _, op, _, _ in graph.ops))})
     (a.output / "inventory.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))

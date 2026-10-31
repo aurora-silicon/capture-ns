@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from pathlib import Path
+import json
 import sys
 import tempfile
 import unittest
@@ -75,3 +76,36 @@ class RecurrentTest(unittest.TestCase):
     def test_refuse_invalid_mode(self):
         with self.assertRaises(ValueError):
             gru(np.zeros((6, 3)), np.zeros((6, 2)), linear_before_reset=2)
+
+    def test_padding_preserves_state_and_zero_tail(self):
+        rng = np.random.default_rng(3654)
+        I, H, P = 7, 11, 512
+        for factory, gates, options in ((gru, 3, {"linear_before_reset": 0, "candidate": "relu"}),
+                                        (gru, 3, {"linear_before_reset": 1}), (lstm, 4, {})):
+            with self.subTest(factory=factory.__name__, options=options):
+                W, R, B = [rng.normal(0, .1, shape).astype(np.float16).astype(np.float32)
+                           for shape in ((gates*H, I), (gates*H, H), (2*gates*H,))]
+                plain = factory(W, R, B, **options)
+                padded = factory(W, R, B, pad_to=P, **options)
+                h, c = np.zeros((1, H), np.float32), np.zeros((1, H), np.float32)
+                hp, cp = np.zeros((1, P), np.float32), np.zeros((1, P), np.float32)
+                for _ in range(100):
+                    x = rng.normal(0, .5, (1, I)).astype(np.float32)
+                    xp = np.pad(x, ((0, 0), (0, P-I)))
+                    expected = plain.evaluate({"x": x, "h": h, "c": c})
+                    actual = padded.evaluate({"x": xp, "h": hp, "c": cp})
+                    h, hp = expected["h_next"], actual["h_next"]
+                    np.testing.assert_allclose(hp[:, :H], h, atol=2e-6, rtol=2e-6)
+                    np.testing.assert_array_equal(hp[:, H:], 0)
+                    if factory is lstm:
+                        c, cp = expected["c_next"], actual["c_next"]
+                        np.testing.assert_allclose(cp[:, :H], c, atol=2e-6, rtol=2e-6)
+                        np.testing.assert_array_equal(cp[:, H:], 0)
+                with tempfile.TemporaryDirectory() as d:
+                    padded.write(d, runtime_vectors=True)
+                    interface = json.loads((Path(d) / "interface.json").read_text())
+                    self.assertEqual(interface["valid_sizes"], {"input": I, "hidden": H})
+                    self.assertIn("Bi" if factory is lstm else "Bz", interface["fixed_inputs"])
+                    self.assertFalse(any(name.startswith(("W", "R")) for name in interface["fixed_inputs"]))
+                    with np.load(Path(d) / "fixed-inputs.npz", allow_pickle=False) as feeds:
+                        self.assertTrue(all(feeds[name].dtype == np.float16 for name in feeds.files))

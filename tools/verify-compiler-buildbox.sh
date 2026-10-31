@@ -5,7 +5,8 @@ BUILD_ROOT=$(realpath -m "${BUILD_OUT:?}")
 mkdir -p "$BUILD_ROOT"
 source tools/python-env.sh
 setup_python "$BUILD_ROOT"
-pip install --only-binary=:all: numpy==2.2.6 onnx==1.18.0 cmake==4.1.2 ninja==1.13.0
+pip install --only-binary=:all: numpy==2.2.6 onnx==1.18.0 onnxruntime==1.22.1 cmake==4.1.2 ninja==1.13.0
+OPENBLAS_NUM_THREADS=1 python3 -m unittest discover -s tests -p 'test_recurrent.py' -v
 git clone --quiet https://github.com/aurora-silicon/mil-hwx-compiler.git "$BUILD_ROOT/compiler"
 git -C "$BUILD_ROOT/compiler" checkout --quiet --detach 45558fb76e08f4c12d9b7d3e333dbac7595f2e80
 export GNUSTEP_PREFIX="$BUILD_ROOT/gnustep" GNUSTEP_BUILD_ROOT="$BUILD_ROOT/gnustep-build" JOBS=8

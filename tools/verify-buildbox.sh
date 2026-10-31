@@ -44,7 +44,7 @@ make BUILD="$BUILD_ROOT/plugin" LIBANE_DIR="$BUILD_ROOT/deps/runtime/libane" \
     all "$BUILD_ROOT/plugin/test-stream" "$BUILD_ROOT/plugin/test-engine" "$BUILD_ROOT/plugin/test-ladspa"
 "$BUILD_ROOT/plugin/test-stream"
 "$BUILD_ROOT/plugin/test-engine"
-python3 -m unittest discover -s tests -p 'test_*.py' -v
+OPENBLAS_NUM_THREADS=1 python3 -m unittest discover -s tests -p 'test_*.py' -v
 python3 tools/model_inventory.py --df-model "$AURORA_DF_MODEL" --rnnoise-source "$BUILD_ROOT/deps/rnnoise" --output "$BUILD_ROOT/receipts/models"
 (
     cd "$BUILD_ROOT/deps/df"
