@@ -46,4 +46,17 @@ These are equal-weight means over eight mixtures, with identical noisy-input sco
 
 Raw, path-free receipts: [RNNoise](benchmark-rnnoise.json), [DFN3](benchmark-df3.json), [aggregate](host-summary.json). DNSMOS model SHA256: `269fbebdb513aa23cddfbb593542ecc540284a91849ac50516870e1ac78f6edd`. The exact successful dependency lock is [tools/df-Cargo.lock](../tools/df-Cargo.lock), SHA256 `9267e89f88e5d347f40f7409c2711d05a8b9ddee1223017973321799227035d3`, retaining Tract 0.21.4.
 
+### aarch64 reference Macs (file only)
+
+`tools/verify-buildbox.sh` built and passed natively on Fedora 44 aarch64 (16K pages, GCC 16.2.1, Rust 1.99/1.98.1) on a MacBook Pro M1 Pro (kernel 7.3.0-aurora-fleet12e) and a MacBook Air M2 (7.3.0-aurora-fleet12d). Both machines produced the same plugin SHA256 prefix `9ca258893eb2` and the same mixtures as the x86_64 run. One run per model per machine, on otherwise idle hosts. No audio device, PipeWire stream or ANE was opened.
+
+| Machine, CPU model path | Process CPU per stream, one core | Engine thread CPU | Per-clip hop p50 range | Worst per-clip hop p99 | Maximum hop | 10 ms misses |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| M1 Pro, RNNoise v0.1.1 | 1.529% | 1.491% | 0.149-0.150 ms | 0.160 ms | 0.204 ms | 0 |
+| M1 Pro, DeepFilterNet3 | 4.406% | 4.291% | 0.420-0.450 ms | 0.495 ms | 0.617 ms | 0 |
+| M2, RNNoise v0.1.1 | 1.451% | 1.420% | 0.142 ms | 0.158 ms | 0.204 ms | 0 |
+| M2, DeepFilterNet3 | 3.817% | 3.779% | 0.377-0.380 ms | 0.456 ms | 0.658 ms | 0 |
+
+Each run recorded 8,494 CPU calls, zero native calls and zero failed calls. Initialization was 3.95-4.83 ms for RNNoise and 226-241 ms for DFN3. Mean DNSMOS matched the x86_64 table to three decimals on both machines.
+
 The same build passed C stream/overload/state tests, original RNNoise weight bit parity, both LADSPA descriptor/lifecycle checks, and all nine Python tests. No audio device, reference Mac or ANE was opened. Native ANE and reference-Mac live numbers remain unmeasured until the corresponding implementation and approved lead runs exist.
