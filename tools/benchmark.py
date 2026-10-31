@@ -112,9 +112,12 @@ def main():
     p.add_argument("--clean-dir", type=Path, required=True, help="OpenSLR LibriSpeech test-clean root")
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--clips", type=int, default=4, help="one utterance per distinct speaker")
+    p.add_argument("--models", nargs="+", choices=("rnnoise", "df3"), default=["rnnoise", "df3"])
     a = p.parse_args()
     if a.clips <= 0:
         p.error("--clips must be positive")
+    if len(set(a.models)) != len(a.models):
+        p.error("--models must not contain duplicates")
     a.output.mkdir(parents=True, exist_ok=True)
     lib = C.CDLL(str(a.library.resolve()))
     lib.ns_engine_new.argtypes = [C.c_int]
@@ -137,6 +140,21 @@ def main():
     if len(files) != a.clips:
         raise ValueError("not enough distinct speakers")
     rows = []
+    result = {"schema": 1, "complete": False, "selected_models": a.models,
+              "host": {"system": platform.system(), "release": platform.release(),
+                       "machine": platform.machine(), "processor": platform.processor()},
+              "dataset": "LibriSpeech test-clean, first sorted utterance per distinct speaker, seeded synthetic 0/5 dB mixtures",
+              "quality": "DNSMOS P.835, nonpersonalized, primary model only",
+              "dns_revision": DNS_REV, "dns_model_sha256": sha(dns.path),
+              "plugin_sha256": sha(a.library),
+              "df_model_sha256": sha(os.environ["AURORA_DF_MODEL"]) if "AURORA_DF_MODEL" in os.environ else None,
+              "rnnoise_model_sha256": sha(os.environ["AURORA_RNNOISE_MODEL"]) if "AURORA_RNNOISE_MODEL" in os.environ else None,
+              "rows": rows}
+    def checkpoint():
+        temporary = a.output / "benchmark.tmp"
+        temporary.write_text(json.dumps(result, indent=2) + "\n")
+        temporary.replace(a.output / "benchmark.json")
+    checkpoint()
     for index, path in enumerate(files):
         clean, rate = sf.read(path, dtype="float32")
         if clean.ndim != 1 or rate != 16000:
@@ -157,22 +175,17 @@ def main():
             row = {"speech": path.stem, "speech_sha256": sha(path), "snr_db": snr,
                    "noise_seed": 3654+index, "noisy_dnsmos": dns(noisy), "models": {}}
             sf.write(a.output / f"{stem}-noisy.wav", noisy, 48000, subtype="FLOAT")
-            for model, name in enumerate(("rnnoise", "df3")):
+            for name in a.models:
+                model = {"rnnoise": 0, "df3": 1}[name]
                 enhanced, receipt = run(lib, model, noisy)
                 receipt["dnsmos"] = dns(enhanced)
                 row["models"][name] = receipt
                 sf.write(a.output / f"{stem}-{name}.wav", enhanced, 48000, subtype="FLOAT")
             rows.append(row)
+            checkpoint()
             print(json.dumps(row), flush=True)
-    result = {"schema": 1, "host": {"system": platform.system(), "release": platform.release(),
-              "machine": platform.machine(), "processor": platform.processor()},
-              "dataset": "LibriSpeech test-clean, first sorted utterance per distinct speaker, seeded synthetic 0/5 dB mixtures",
-              "quality": "DNSMOS P.835, nonpersonalized, primary model only",
-              "dns_revision": DNS_REV, "dns_model_sha256": sha(dns.path),
-              "plugin_sha256": sha(a.library), "df_model_sha256": sha(os.environ["AURORA_DF_MODEL"]),
-              "rnnoise_model_sha256": sha(os.environ["AURORA_RNNOISE_MODEL"]),
-              "rows": rows}
-    (a.output / "benchmark.json").write_text(json.dumps(result, indent=2) + "\n")
+    result["complete"] = True
+    checkpoint()
 
 
 if __name__ == "__main__":

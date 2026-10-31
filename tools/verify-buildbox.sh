@@ -46,27 +46,37 @@ make BUILD="$BUILD_ROOT/plugin" LIBANE_DIR="$BUILD_ROOT/deps/runtime/libane" \
 "$BUILD_ROOT/plugin/test-engine"
 OPENBLAS_NUM_THREADS=1 python3 -m unittest discover -s tests -p 'test_*.py' -v
 python3 tools/model_inventory.py --df-model "$AURORA_DF_MODEL" --rnnoise-source "$BUILD_ROOT/deps/rnnoise" --output "$BUILD_ROOT/receipts/models"
-(
-    cd "$BUILD_ROOT/deps/df"
-    # The published workspace lock is stale. Retain the resolved lock from
-    # the first build, then replay it exactly on subsequent builds.
-    if [[ -f "$ROOT/tools/df-Cargo.lock" ]]; then
-        cp "$ROOT/tools/df-Cargo.lock" Cargo.lock
-    else
-        cargo generate-lockfile
-    fi
-    cp Cargo.lock "$BUILD_ROOT/receipts/DF-Cargo.lock.txt"
-    sha256sum Cargo.lock > "$BUILD_ROOT/receipts/DF-Cargo.lock.sha256"
-    CARGO_BUILD_JOBS=8 CARGO_TARGET_DIR="$BUILD_ROOT/df-target" cargo build --release --locked -p deep_filter --no-default-features --features capi
-)
-"$BUILD_ROOT/plugin/test-ladspa" "$BUILD_ROOT/plugin/libaurora_capture_ns.so"
+pip freeze > "$BUILD_ROOT/receipts/python-packages.txt"
+uname -srvmo > "$BUILD_ROOT/receipts/host.txt"
+lscpu > "$BUILD_ROOT/receipts/cpu.txt"
 mkdir -p "$BUILD_ROOT/data"
 curl --fail --location --retry 3 https://www.openslr.org/resources/12/test-clean.tar.gz -o "$BUILD_ROOT/data/test-clean.tar.gz"
 sha256sum "$BUILD_ROOT/data/test-clean.tar.gz" > "$BUILD_ROOT/receipts/dataset.sha256"
 tar -xzf "$BUILD_ROOT/data/test-clean.tar.gz" -C "$BUILD_ROOT/data"
 python3 tools/benchmark.py --library "$BUILD_ROOT/plugin/libaurora_capture_ns.so" \
-    --clean-dir "$BUILD_ROOT/data/LibriSpeech/test-clean" --output "$BUILD_ROOT/receipts/bench" --clips 4
-pip freeze > "$BUILD_ROOT/receipts/python-packages.txt"
-uname -srvmo > "$BUILD_ROOT/receipts/host.txt"
-lscpu > "$BUILD_ROOT/receipts/cpu.txt"
+    --clean-dir "$BUILD_ROOT/data/LibriSpeech/test-clean" --output "$BUILD_ROOT/receipts/bench-rnnoise" --clips 4 --models rnnoise
+(
+    cd "$BUILD_ROOT/deps/df"
+    # Refresh stale workspace entries without upgrading the compatible
+    # Tract 0.21.4 dependency set to the API-incompatible 0.21.10 release.
+    if [[ -f "$ROOT/tools/df-Cargo.lock" ]]; then
+        cp "$ROOT/tools/df-Cargo.lock" Cargo.lock
+    else
+        cargo update --workspace
+    fi
+    python3 - <<'PY'
+import tomllib
+from pathlib import Path
+lock = tomllib.loads(Path('Cargo.lock').read_text())
+tract = {p['name']:p['version'] for p in lock['package'] if p['name'].startswith('tract-')}
+assert tract and set(tract.values()) == {'0.21.4'}, tract
+print('compatible Tract family:', tract)
+PY
+    cp Cargo.lock "$BUILD_ROOT/receipts/DF-Cargo.lock.txt"
+    sha256sum Cargo.lock > "$BUILD_ROOT/receipts/DF-Cargo.lock.sha256"
+    CARGO_BUILD_JOBS=8 CARGO_TARGET_DIR="$BUILD_ROOT/df-target" cargo build --release --locked -p deep_filter --no-default-features --features capi
+)
+"$BUILD_ROOT/plugin/test-ladspa" "$BUILD_ROOT/plugin/libaurora_capture_ns.so"
+python3 tools/benchmark.py --library "$BUILD_ROOT/plugin/libaurora_capture_ns.so" \
+    --clean-dir "$BUILD_ROOT/data/LibriSpeech/test-clean" --output "$BUILD_ROOT/receipts/bench-df3" --clips 4 --models df3
 echo "file-only validation complete"
