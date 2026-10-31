@@ -39,7 +39,9 @@ class RecurrentTest(unittest.TestCase):
         graph = h.make_graph([node], "oracle", inputs, outputs, params)
         model = h.make_model(graph, opset_imports=[h.make_opsetid("", 14)], ir_version=10)
         onnx.checker.check_model(model)
-        session = ort.InferenceSession(model.SerializeToString(), providers=["CPUExecutionProvider"])
+        options = ort.SessionOptions()
+        options.intra_op_num_threads = options.inter_op_num_threads = 1
+        session = ort.InferenceSession(model.SerializeToString(), options, providers=["CPUExecutionProvider"])
         state, cell = np.zeros((1, H), np.float32), np.zeros((1, H), np.float32)
         for _ in range(100):
             x = rng.normal(0, .5, (1, I)).astype(np.float32)
