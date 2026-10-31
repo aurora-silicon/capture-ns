@@ -15,7 +15,7 @@ make LIBANE_DIR=/usr/include/libane
 make install PREFIX=/usr/local
 ```
 
-Build RNNoise from revision `6cbfd53eb348a8d394e0757b4025c6ded34eb2b6` and libDF from `d375b2d8309e0935d165700c91da9de862a99c31`. For libDF use `cargo build --release --locked -p deep_filter --no-default-features --features capi`. The full reproducible build and recorded-file evaluation are in [tools/verify-buildbox.sh](tools/verify-buildbox.sh). All dependencies and weights have a [licence audit](docs/LICENSE-AUDIT.md).
+Build RNNoise from revision `6cbfd53eb348a8d394e0757b4025c6ded34eb2b6` and libDF from `d375b2d8309e0935d165700c91da9de862a99c31`. The libDF build uses `--release --locked -p deep_filter --no-default-features --features capi` with the integration's recorded dependency lock; the published workspace lock needs refresh. The full build and recorded-file evaluation are in [tools/verify-buildbox.sh](tools/verify-buildbox.sh). All dependencies and weights have a [licence audit](docs/LICENSE-AUDIT.md).
 
 Serialize the audited RNNoise weights without modifying them:
 

@@ -23,10 +23,6 @@ make -C "$BUILD_ROOT/deps/runtime/libane" -j8
     ./configure --disable-examples
     make -j8
 )
-(
-    cd "$BUILD_ROOT/deps/df"
-    CARGO_BUILD_JOBS=8 CARGO_TARGET_DIR="$BUILD_ROOT/df-target" cargo build --release --locked -p deep_filter --no-default-features --features capi
-)
 export AURORA_RNNOISE_LIBRARY="$BUILD_ROOT/deps/rnnoise/.libs/librnnoise.so"
 export AURORA_DF_LIBRARY="$BUILD_ROOT/df-target/release/libdf.so"
 export AURORA_DF_MODEL="$BUILD_ROOT/deps/df/models/DeepFilterNet3_onnx.tar.gz"
@@ -36,9 +32,26 @@ source tools/python-env.sh
 setup_python "$BUILD_ROOT"
 pip install --only-binary=:all: numpy==2.2.6 scipy==1.15.3 soundfile==0.13.1 onnxruntime==1.22.1 onnx==1.18.0
 make BUILD="$BUILD_ROOT/plugin" LIBANE_DIR="$BUILD_ROOT/deps/runtime/libane" \
-    LIBANE_LIB="$BUILD_ROOT/deps/runtime/libane/libane.a" CFLAGS="-O2 -g -I$BUILD_ROOT/include" check
+    LIBANE_LIB="$BUILD_ROOT/deps/runtime/libane/libane.a" CFLAGS="-O2 -g -I$BUILD_ROOT/include" \
+    all "$BUILD_ROOT/plugin/test-stream" "$BUILD_ROOT/plugin/test-engine" "$BUILD_ROOT/plugin/test-ladspa"
+"$BUILD_ROOT/plugin/test-stream"
+"$BUILD_ROOT/plugin/test-engine"
+python3 -m unittest discover -s tests -p 'test_*.py' -v
 python3 tools/model_inventory.py --df-model "$AURORA_DF_MODEL" --rnnoise-source "$BUILD_ROOT/deps/rnnoise" --output "$BUILD_ROOT/receipts/models"
-python3 -m unittest discover -s tests -p 'test_recurrent.py' -v
+(
+    cd "$BUILD_ROOT/deps/df"
+    # The published workspace lock is stale. Retain the resolved lock from
+    # the first build, then replay it exactly on subsequent builds.
+    if [[ -f "$ROOT/tools/df-Cargo.lock" ]]; then
+        cp "$ROOT/tools/df-Cargo.lock" Cargo.lock
+    else
+        cargo generate-lockfile
+    fi
+    cp Cargo.lock "$BUILD_ROOT/receipts/DF-Cargo.lock.txt"
+    sha256sum Cargo.lock > "$BUILD_ROOT/receipts/DF-Cargo.lock.sha256"
+    CARGO_BUILD_JOBS=8 CARGO_TARGET_DIR="$BUILD_ROOT/df-target" cargo build --release --locked -p deep_filter --no-default-features --features capi
+)
+"$BUILD_ROOT/plugin/test-ladspa" "$BUILD_ROOT/plugin/libaurora_capture_ns.so"
 mkdir -p "$BUILD_ROOT/data"
 curl --fail --location --retry 3 https://www.openslr.org/resources/12/test-clean.tar.gz -o "$BUILD_ROOT/data/test-clean.tar.gz"
 sha256sum "$BUILD_ROOT/data/test-clean.tar.gz" > "$BUILD_ROOT/receipts/dataset.sha256"
