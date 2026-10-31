@@ -34,6 +34,19 @@ export AURORA_DF_LIBRARY=/path/to/DeepFilterNet/target/release/libdf.so
 
 Library path variables are optional when the audited libraries are installed in the dynamic loader search path. Model paths are required and hash checked. A wrong model or unavailable library fails initialization; it does not substitute another model or pass through an unfiltered microphone. The launcher runs a dedicated filter-chain client process, so libDF's aborting C API cannot abort the main PipeWire daemon.
 
+## Denoise a file
+
+`tools/denoise-file.py` runs the same engine over a recorded file without PipeWire, a microphone or playback. It needs the model variables above plus NumPy, SciPy and soundfile. Input is mixed to mono and resampled to 48 kHz. The output is 48 kHz mono with the model delay removed.
+
+```sh
+python3 tools/denoise-file.py noisy.wav clean.wav --model df3 \
+    --library /usr/local/lib/ladspa/libaurora_capture_ns.so
+```
+
+It prints the stream's one-core CPU percentage, maximum hop time and CPU/native call counts.
+
+On Fedora 44 aarch64, `tools/verify-buildbox.sh` also needs `autoconf automake libtool openssl-devel cargo`.
+
 ## Select a microphone
 
 Find the microphone's `node.name` in `pw-dump`. Explicitly choose it; neither the default source nor a sink monitor is accepted as a shortcut.
