@@ -60,6 +60,12 @@ Use `--model df3` for DeepFilterNet3. In the recording application, select the e
 
 RNNoise's algorithmic delay is 10 ms; DFN3's is 30 ms. The plugin adds a fixed 20 ms worker queue, giving nominal processing delays of 30/50 ms before capture hardware, resampling and PipeWire scheduling buffers. The `latency` output port reports 1440/2400 samples to PipeWire. `Late Hops` and `Dropped Hops` expose overload. This is a soft realtime worker design; its LADSPA descriptor does not claim hard realtime capability.
 
+For status without an audio consumer, set `AURORA_NS_STATUS` to an absolute
+JSON path in a private runtime directory before starting the dedicated client.
+A background thread reports real late/dropped/error counters once a second;
+no samples are saved. Use a unique path for each plugin instance. See the
+[capture boundary](docs/CAPTURE-BOUNDARY.md) for its lifecycle and file writes.
+
 ## Validation
 
 `make check` tests variable block sizes, in-place buffers, fixed queue delay, bounded overload, isolated model state, the LADSPA lifecycle, source selection and recurrent lowering. The recurrent equations are compared against independent ONNX Runtime GRU/LSTM operators across 100 stateful steps, including both GRU reset conventions. Tests and benchmarks require no audio device or ANE.
