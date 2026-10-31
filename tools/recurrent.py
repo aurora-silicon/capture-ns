@@ -75,6 +75,12 @@ class Graph:
         for name, op, a, b in self.ops:
             t = typ(self.shapes[name])
             if op in ("sigmoid", "tanh", "relu"):
+                if runtime_vectors:
+                    # Both parity planners flatten this 512-element row to
+                    # the decoded channel surface. H14 does not lower the
+                    # otherwise redundant reshape views used by H13.
+                    lines.append(f'    {t} {name} = {op}(x = {a})[name = string("{name}")];')
+                    continue
                 h = self.shapes[name][1]
                 lines.extend([
                     f'    tensor<int32, [4]> {name}_s4 = const()[name = string("{name}_s4"), val = tensor<int32, [4]>([1,{h},1,1])];',
