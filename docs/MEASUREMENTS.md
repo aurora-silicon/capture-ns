@@ -1,6 +1,6 @@
 # Measurement method and receipts
 
-The file benchmark uses four LibriSpeech test-clean utterances from distinct speakers, selected in sorted file order mixed with deterministic white/colored noise at 0 and 5 dB SNR. This is a small, reproducible synthetic noisy-speech set, not the full VoiceBank-DEMAND or DNS Challenge test set. Speech IDs, source hashes, seeds and model hashes are written into the JSON. No private recording is used or published.
+The file benchmark uses four LibriSpeech test-clean utterances from distinct speakers, selected in sorted file order and mixed with deterministic white/colored noise at 0 and 5 dB SNR. This is a small, reproducible synthetic noisy-speech set, not the full VoiceBank-DEMAND or DNS Challenge test set. Speech IDs, source hashes, seeds and model hashes are written into the JSON. No private recording is used or published.
 
 The build harness writes separate RNNoise and DFN3 receipts for the same mixtures. Each JSON names its selected models and marks whether the run completed; per-mixture checkpoints survive later failures. Only complete runs are used for aggregate measurements. `--models rnnoise` or `--models df3` can also be used for independent reruns.
 
