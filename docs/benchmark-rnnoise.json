@@ -1,0 +1,310 @@
+{
+  "schema": 1,
+  "complete": true,
+  "selected_models": [
+    "rnnoise"
+  ],
+  "host": {
+    "system": "Linux",
+    "release": "7.0.12-arch1-1",
+    "machine": "x86_64",
+    "processor": ""
+  },
+  "dataset": "LibriSpeech test-clean, first sorted utterance per distinct speaker, seeded synthetic 0/5 dB mixtures",
+  "quality": "DNSMOS P.835, nonpersonalized, primary model only",
+  "dns_revision": "591184a9fcb2cbdec02520fed81a32bbbf9d73ff",
+  "dns_model_sha256": "269fbebdb513aa23cddfbb593542ecc540284a91849ac50516870e1ac78f6edd",
+  "plugin_sha256": "5ab6a70c6869be2a77c8bc7a42dbc7f8a3e52daa6540211b670f74059f001d1d",
+  "df_model_sha256": "c94d91f70911001c946e0fabb4aa9adc37045f45a03b56008cb0c8244cb63616",
+  "rnnoise_model_sha256": "6b8943dc4a9b6b24425873992a44f29c0577503276456af46a8854774faeb294",
+  "rows": [
+    {
+      "speech": "1089-134686-0000",
+      "speech_sha256": "30885601173f96b0d8ddd020dc959b055c6c1582b85a33e3fcab8c4b08ed94c2",
+      "snr_db": 0,
+      "noise_seed": 3654,
+      "noisy_dnsmos": {
+        "sig": 3.081139458489199,
+        "bak": 1.7041622835458143,
+        "ovrl": 1.7702811309150366
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 5.531745,
+          "audio_seconds_including_flush": 10.54,
+          "cpu_percent_one_core": 1.30664495256167,
+          "engine_thread_cpu_percent_one_core": 1.2647311859582542,
+          "hop_wall_ms": {
+            "p50": 0.1011705,
+            "p95": 0.23848044999999998,
+            "p99": 0.28923020000000016,
+            "max": 0.351899
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 1054,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 3.0220184420770586,
+            "bak": 3.367192514109538,
+            "ovrl": 2.5439102960997335
+          }
+        }
+      }
+    },
+    {
+      "speech": "1089-134686-0000",
+      "speech_sha256": "30885601173f96b0d8ddd020dc959b055c6c1582b85a33e3fcab8c4b08ed94c2",
+      "snr_db": 5,
+      "noise_seed": 3654,
+      "noisy_dnsmos": {
+        "sig": 3.374990105375085,
+        "bak": 2.0320828552039396,
+        "ovrl": 2.053304274057039
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 4.770819,
+          "audio_seconds_including_flush": 10.54,
+          "cpu_percent_one_core": 0.9273614326375712,
+          "engine_thread_cpu_percent_one_core": 0.8980125996204934,
+          "hop_wall_ms": {
+            "p50": 0.088436,
+            "p95": 0.11348739999999997,
+            "p99": 0.13353295999999998,
+            "max": 0.2546
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 1054,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 3.313968874938844,
+            "bak": 3.875507533391617,
+            "ovrl": 2.9842503077413647
+          }
+        }
+      }
+    },
+    {
+      "speech": "1188-133604-0000",
+      "speech_sha256": "4a10149395cb5af8aa5d04ef3adb49b3980baa93114d0851046e6343744b26cb",
+      "snr_db": 0,
+      "noise_seed": 3655,
+      "noisy_dnsmos": {
+        "sig": 2.746276244919004,
+        "bak": 1.6058804841054106,
+        "ovrl": 1.6283778605549402
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 4.664067,
+          "audio_seconds_including_flush": 10.83,
+          "cpu_percent_one_core": 1.507751320406279,
+          "engine_thread_cpu_percent_one_core": 1.4556224007386889,
+          "hop_wall_ms": {
+            "p50": 0.129725,
+            "p95": 0.2914615,
+            "p99": 0.3805991800000002,
+            "max": 0.480921
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 1083,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 3.2927637141361927,
+            "bak": 3.9232496820920644,
+            "ovrl": 2.9617217579421578
+          }
+        }
+      }
+    },
+    {
+      "speech": "1188-133604-0000",
+      "speech_sha256": "4a10149395cb5af8aa5d04ef3adb49b3980baa93114d0851046e6343744b26cb",
+      "snr_db": 5,
+      "noise_seed": 3655,
+      "noisy_dnsmos": {
+        "sig": 3.284252740974849,
+        "bak": 2.067268178493719,
+        "ovrl": 2.0476004360482807
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 4.750861,
+          "audio_seconds_including_flush": 10.83,
+          "cpu_percent_one_core": 0.9808930840258541,
+          "engine_thread_cpu_percent_one_core": 0.9495730101569714,
+          "hop_wall_ms": {
+            "p50": 0.090366,
+            "p95": 0.13589799999999996,
+            "p99": 0.19053420000000001,
+            "max": 0.337209
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 1083,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 3.445254032690012,
+            "bak": 4.002723182362143,
+            "ovrl": 3.138955726277946
+          }
+        }
+      }
+    },
+    {
+      "speech": "121-121726-0000",
+      "speech_sha256": "81378fdb3e648b43efb1cb8c4f87da3fc9cfbe19c5dda97e9e7361c4a2470d2f",
+      "snr_db": 0,
+      "noise_seed": 3656,
+      "noisy_dnsmos": {
+        "sig": 2.8230591166817534,
+        "bak": 1.5174239363318007,
+        "ovrl": 1.5806436731422813
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 3.282882,
+          "audio_seconds_including_flush": 8.56,
+          "cpu_percent_one_core": 0.8274742289719625,
+          "engine_thread_cpu_percent_one_core": 0.8000941004672897,
+          "hop_wall_ms": {
+            "p50": 0.078797,
+            "p95": 0.1015545,
+            "p99": 0.11170190000000002,
+            "max": 0.124596
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 856,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 2.824859316214127,
+            "bak": 3.0031941767527357,
+            "ovrl": 2.240237814047347
+          }
+        }
+      }
+    },
+    {
+      "speech": "121-121726-0000",
+      "speech_sha256": "81378fdb3e648b43efb1cb8c4f87da3fc9cfbe19c5dda97e9e7361c4a2470d2f",
+      "snr_db": 5,
+      "noise_seed": 3656,
+      "noisy_dnsmos": {
+        "sig": 3.444580670819213,
+        "bak": 1.8866616882995169,
+        "ovrl": 2.031703432940828
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 3.045729,
+          "audio_seconds_including_flush": 8.56,
+          "cpu_percent_one_core": 0.8712618457943925,
+          "engine_thread_cpu_percent_one_core": 0.8432178271028037,
+          "hop_wall_ms": {
+            "p50": 0.081181,
+            "p95": 0.116258,
+            "p99": 0.12812625000000005,
+            "max": 0.139684
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 856,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 3.2473321858598876,
+            "bak": 3.6191166105141277,
+            "ovrl": 2.811142461921735
+          }
+        }
+      }
+    },
+    {
+      "speech": "1221-135766-0000",
+      "speech_sha256": "1f6b9ba126dc0f0a3cb813b04e2c970ff9583beeaf8cfaa8f7c8199244aa2514",
+      "snr_db": 0,
+      "noise_seed": 3657,
+      "noisy_dnsmos": {
+        "sig": 1.31961163390081,
+        "bak": 1.1426710317522772,
+        "ovrl": 1.1330607531632266
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 3.104097,
+          "audio_seconds_including_flush": 12.54,
+          "cpu_percent_one_core": 0.8224123684210526,
+          "engine_thread_cpu_percent_one_core": 0.794474744816587,
+          "hop_wall_ms": {
+            "p50": 0.078173,
+            "p95": 0.09842724999999998,
+            "p99": 0.11706633000000001,
+            "max": 0.134529
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 1254,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 2.7882445961203874,
+            "bak": 3.1947261295852685,
+            "ovrl": 2.2736694393580614
+          }
+        }
+      }
+    },
+    {
+      "speech": "1221-135766-0000",
+      "speech_sha256": "1f6b9ba126dc0f0a3cb813b04e2c970ff9583beeaf8cfaa8f7c8199244aa2514",
+      "snr_db": 5,
+      "noise_seed": 3657,
+      "noisy_dnsmos": {
+        "sig": 2.9308764927282644,
+        "bak": 1.7484425955108698,
+        "ovrl": 1.8105968583849783
+      },
+      "models": {
+        "rnnoise": {
+          "init_ms": 3.866137,
+          "audio_seconds_including_flush": 12.54,
+          "cpu_percent_one_core": 0.8863122807017544,
+          "engine_thread_cpu_percent_one_core": 0.8585892663476874,
+          "hop_wall_ms": {
+            "p50": 0.0837365,
+            "p95": 0.11026429999999998,
+            "p99": 0.12194104000000001,
+            "max": 0.137475
+          },
+          "deadline_misses_10ms": 0,
+          "cpu_calls": 1254,
+          "native_calls": 0,
+          "failed_calls": 0,
+          "model_delay_samples": 480,
+          "plugin_queue_delay_samples": 960,
+          "dnsmos": {
+            "sig": 3.404685068105498,
+            "bak": 3.7516388067646385,
+            "ovrl": 3.005601081219355
+          }
+        }
+      }
+    }
+  ]
+}
