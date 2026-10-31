@@ -52,3 +52,5 @@ RNNoise's algorithmic delay is 10 ms; DFN3's is 30 ms. The plugin adds a fixed 2
 `make check` tests variable block sizes, in-place buffers, fixed queue delay, bounded overload, isolated model state, the LADSPA lifecycle, source selection and recurrent lowering. The recurrent equations are compared against independent ONNX Runtime GRU/LSTM operators across 100 stateful steps, including both GRU reset conventions. Tests and benchmarks require no audio device or ANE.
 
 [Measurement method and results](docs/MEASUREMENTS.md) distinguish host CPU measurements from the pending native ANE and lead-run PipeWire checks. The code is MIT; third-party model and API licences remain theirs.
+
+On an i9-13900K file benchmark, RNNoise used 1.018% of one CPU core and DFN3 5.915%; neither missed a 10 ms hop. Mean DNSMOS OVRL was 1.757 for noisy input, 2.745 for RNNoise and 3.176 for DFN3 over eight synthetic mixtures from four speakers. These are CPU measurements on a shared x86 host; native ANE and live capture remain unverified.
