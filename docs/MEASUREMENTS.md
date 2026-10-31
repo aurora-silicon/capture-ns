@@ -23,6 +23,8 @@ DFN3's calculation follows `libDF/src/bin/enhance_wav.rs` and the audited model'
 
 The task's earlier measured per-submit overheads, 0.04 ms for H13 and 0.25 ms for M2 Max, are historical inputs, not new measurements here. The emitted recurrent cell uses 24 primitive operations before layout-only reshapes. Three RNNoise cells therefore require at least 72 per-op dispatches without fusion: 2.88 ms / 18 ms of those historical call overheads alone. Dense layers, DSP, packing and any split matmuls add cost. This estimate explains why fusion is necessary, especially on H14; it is not an ANE benchmark or a prediction of measured speedup.
 
+The final padded compiler sweep confirms 24 programs per GRU on H13 and H14. DFN3's five cells alone therefore require 120 dispatches without fusion: 4.8 ms / 30 ms using those historical inputs, before its convolution and other graph regions. Full-model coverage, fused regions and native measurements remain necessary before enabling an accelerator path.
+
 ## Measured host results
 
 Linux x86_64, Intel Core i9-13900K, kernel 7.0.12-arch1-1; a shared, nonisolated build host. Each model processed 8,494 hops, 84.94 s including flush padding, across the same eight mixtures from four speakers. This is one run per model, not an ARM reference-machine comparison.
