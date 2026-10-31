@@ -3,6 +3,8 @@
 set -euo pipefail
 BUILD_ROOT=$(realpath -m "${BUILD_OUT:?}")
 mkdir -p "$BUILD_ROOT"
+mkdir -p "$BUILD_ROOT/compiler-results"
+sha256sum tools/recurrent.py tools/model_inventory.py tools/compiler_sweep.py tests/test_recurrent.py > "$BUILD_ROOT/compiler-results/exporter-sources.sha256"
 source tools/python-env.sh
 setup_python "$BUILD_ROOT"
 pip install --only-binary=:all: numpy==2.2.6 onnx==1.18.0 onnxruntime==1.22.1 cmake==4.1.2 ninja==1.13.0
