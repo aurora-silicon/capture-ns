@@ -111,8 +111,10 @@ def main():
     p.add_argument("--library", type=Path, required=True)
     p.add_argument("--clean-dir", type=Path, required=True, help="OpenSLR LibriSpeech test-clean root")
     p.add_argument("--output", type=Path, required=True)
-    p.add_argument("--clips", type=int, default=4)
+    p.add_argument("--clips", type=int, default=4, help="one utterance per distinct speaker")
     a = p.parse_args()
+    if a.clips <= 0:
+        p.error("--clips must be positive")
     a.output.mkdir(parents=True, exist_ok=True)
     lib = C.CDLL(str(a.library.resolve()))
     lib.ns_engine_new.argtypes = [C.c_int]
@@ -123,9 +125,17 @@ def main():
     lib.ns_engine_stats.argtypes = [C.c_void_p, C.POINTER(Stats)]
     lib.ns_engine_stats.restype = None
     dns = DNSMOS(a.output)
-    files = sorted(a.clean_dir.rglob("*.flac"))[:a.clips]
+    files, speakers = [], set()
+    for path in sorted(a.clean_dir.rglob("*.flac")):
+        speaker = path.stem.split("-")[0]
+        if speaker in speakers:
+            continue
+        speakers.add(speaker)
+        files.append(path)
+        if len(files) == a.clips:
+            break
     if len(files) != a.clips:
-        raise ValueError("not enough clean clips")
+        raise ValueError("not enough distinct speakers")
     rows = []
     for index, path in enumerate(files):
         clean, rate = sf.read(path, dtype="float32")
@@ -156,7 +166,7 @@ def main():
             print(json.dumps(row), flush=True)
     result = {"schema": 1, "host": {"system": platform.system(), "release": platform.release(),
               "machine": platform.machine(), "processor": platform.processor()},
-              "dataset": "LibriSpeech test-clean, first sorted FLAC files, seeded synthetic 0/5 dB mixtures",
+              "dataset": "LibriSpeech test-clean, first sorted utterance per distinct speaker, seeded synthetic 0/5 dB mixtures",
               "quality": "DNSMOS P.835, nonpersonalized, primary model only",
               "dns_revision": DNS_REV, "dns_model_sha256": sha(dns.path),
               "plugin_sha256": sha(a.library), "df_model_sha256": sha(os.environ["AURORA_DF_MODEL"]),

@@ -5,7 +5,7 @@ ROOT=$PWD
 BUILD_ROOT=${BUILD_OUT:?controller build output required}
 mkdir -p "$BUILD_ROOT/deps" "$BUILD_ROOT/include" "$BUILD_ROOT/receipts"
 BUILD_ROOT=$(realpath "$BUILD_ROOT")
-sha256sum src/*.c include/capture_ns.h tools/aurora-capture-ns > "$BUILD_ROOT/receipts/integration-sources.sha256"
+sha256sum src/*.c include/capture_ns.h tools/*.py tools/aurora-capture-ns > "$BUILD_ROOT/receipts/integration-sources.sha256"
 cp tools/verify-buildbox.sh "$BUILD_ROOT/receipts/build-script.txt"
 fetch() {
     local project=$1 revision=$2 destination=$3

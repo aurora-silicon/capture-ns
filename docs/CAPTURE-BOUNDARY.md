@@ -18,6 +18,6 @@ git diff --name-only main...HEAD
 git diff main...HEAD -- Makefile tools/aurora-capture-ns src include
 ```
 
-The only external writes in the launcher are its private temporary directory. The only subprocesses are the read-only `pw-dump` and the dedicated `pipewire` filter client. Build/evaluation scripts write their own build and result directories and download licensed public sources. They neither connect to a reference Mac nor open an audio device.
+The launcher's only filesystem writes are in its private temporary directory. Its PipeWire client creates the two transient capture-filter nodes described above. The only subprocesses are the read-only `pw-dump` and the dedicated `pipewire` filter client. Build/evaluation scripts write their own build and result directories and download licensed public sources. They neither connect to a reference Mac nor open an audio device.
 
 Operational speaker protection remains outside this source's graph and must remain active and governing during any lead capture test. The test plan never needs sound output, protection changes, UCM edits or playback graph inspection/reconfiguration.
