@@ -73,7 +73,7 @@ def main():
     try:
         nodes = json.loads(subprocess.check_output(["pw-dump"], text=True))
         text = config(source_serial(nodes, a.source), a.model, a.plugin.resolve())
-    except (ValueError, subprocess.CalledProcessError) as e:
+    except (ValueError, OSError, subprocess.CalledProcessError) as e:
         p.error(str(e))
     if a.print_config:
         print(text)
@@ -98,8 +98,8 @@ def main():
             for number in (signal.SIGTERM, signal.SIGINT):
                 previous[number] = signal.signal(number, forward)
             code = child.wait()
-            if code > 0:
-                raise SystemExit(code)
+            if code:
+                raise SystemExit(code if code > 0 else 128 - code)
         finally:
             if child.poll() is None:
                 child.terminate()
