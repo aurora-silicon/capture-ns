@@ -50,7 +50,7 @@ def config(serial, model, plugin):
                     "node.latency": "480/48000",
                     "target.object": str(serial), "node.passive": True,
                     "node.dont-fallback": True, "node.dont-reconnect": True,
-                    "stream.capture.sink": False, "stream.dont-remix": True},
+                    "stream.capture.sink": False},
                 # PipeWire calls the output side of a filter playback.props.
                 # Audio/Source exports capture ports; autoconnect is disabled.
                 "playback.props": {

@@ -1,6 +1,6 @@
 # Lead test plan: files first, microphone only
 
-No step requires playback, a sink monitor, volume changes, protection changes, UCM changes or an audio-service restart. The worker task does not authorize target execution. Every lead target run must be submitted to the controller with the task ID, an explicit device identity (first `m1pro`, then `m2` if required), the exact command/source identity and policy approval. Preserve request IDs, logs and hashes. Do not add a presence, display, session, time-of-day or audio-usage check.
+No step requires playback, a sink monitor, volume changes, protection changes, UCM changes or an audio-service restart. The worker task does not authorize target execution. Every lead target run must be submitted to the controller with the task ID, an explicit device identity (first `m1pro`, then `m2` if required), the exact command/source identity and policy approval. Preserve request IDs, logs and hashes.
 
 ## Build and files
 
