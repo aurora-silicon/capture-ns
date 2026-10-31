@@ -18,6 +18,12 @@ fetch xiph/rnnoise 6cbfd53eb348a8d394e0757b4025c6ded34eb2b6 "$BUILD_ROOT/deps/rn
 fetch Rikorose/DeepFilterNet d375b2d8309e0935d165700c91da9de862a99c31 "$BUILD_ROOT/deps/df"
 # Use PipeWire's bundled LGPL-2.1-or-later LADSPA API header without vendoring it.
 curl --fail --location --retry 3 https://raw.githubusercontent.com/aurora-silicon/pipewire/5009ec694a0a6ec6351eac787769a128b6a168e1/spa/plugins/filter-graph/ladspa.h -o "$BUILD_ROOT/include/ladspa.h"
+cp LICENSE "$BUILD_ROOT/receipts/integration-LICENSE.txt"
+cp NOTICES.md "$BUILD_ROOT/receipts/attribution.txt"
+cp "$BUILD_ROOT/deps/runtime/LICENSE" "$BUILD_ROOT/receipts/libane-LICENSE.txt"
+cp "$BUILD_ROOT/deps/rnnoise/COPYING" "$BUILD_ROOT/receipts/RNNOISE-COPYING.txt"
+cp "$BUILD_ROOT/deps/df/LICENSE-MIT" "$BUILD_ROOT/receipts/DF-LICENSE-MIT.txt"
+cp "$BUILD_ROOT/include/ladspa.h" "$BUILD_ROOT/receipts/LADSPA-API.txt"
 make -C "$BUILD_ROOT/deps/runtime/libane" -j8
 (
     cd "$BUILD_ROOT/deps/rnnoise"
@@ -60,8 +66,6 @@ sha256sum "$BUILD_ROOT/data/test-clean.tar.gz" > "$BUILD_ROOT/receipts/dataset.s
 tar -xzf "$BUILD_ROOT/data/test-clean.tar.gz" -C "$BUILD_ROOT/data"
 python3 tools/benchmark.py --library "$BUILD_ROOT/plugin/libaurora_capture_ns.so" \
     --clean-dir "$BUILD_ROOT/data/LibriSpeech/test-clean" --output "$BUILD_ROOT/receipts/bench" --clips 4
-cp "$BUILD_ROOT/deps/df/LICENSE-MIT" "$BUILD_ROOT/receipts/DF-LICENSE-MIT"
-cp "$BUILD_ROOT/deps/rnnoise/COPYING" "$BUILD_ROOT/receipts/RNNOISE-COPYING"
 pip freeze > "$BUILD_ROOT/receipts/python-packages.txt"
 uname -srvmo > "$BUILD_ROOT/receipts/host.txt"
 lscpu > "$BUILD_ROOT/receipts/cpu.txt"
