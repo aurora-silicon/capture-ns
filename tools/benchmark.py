@@ -118,8 +118,10 @@ def main():
     lib.ns_engine_new.argtypes = [C.c_int]
     lib.ns_engine_new.restype = C.c_void_p
     lib.ns_engine_free.argtypes = [C.c_void_p]
+    lib.ns_engine_free.restype = None
     lib.ns_engine_process.argtypes = [C.c_void_p, C.c_void_p, C.c_void_p]
     lib.ns_engine_stats.argtypes = [C.c_void_p, C.POINTER(Stats)]
+    lib.ns_engine_stats.restype = None
     dns = DNSMOS(a.output)
     files = sorted(a.clean_dir.rglob("*.flac"))[:a.clips]
     if len(files) != a.clips:
