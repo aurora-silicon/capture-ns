@@ -53,7 +53,7 @@ def main():
                 try:
                     if attrs.get("direction", b"forward") != b"forward" or attrs.get("layout", 0) != 0:
                         raise ValueError("only forward layout-0 cells supported")
-                    if attrs.get("clip") or attrs.get("activations") or attrs.get("input_forget") or len(node.input) > 7:
+                    if "clip" in attrs or attrs.get("activations") or attrs.get("input_forget") or len(node.input) > 7:
                         raise ValueError("nondefault recurrent attributes/peepholes need explicit lowering")
                     W, R = (constants[n][0] for n in node.input[1:3])
                     B = constants[node.input[3]][0] if len(node.input) > 3 and node.input[3] else None
