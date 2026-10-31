@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+"""Run one opt-in source. Never writes a persistent config or changes defaults."""
+import argparse
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import tempfile
+
+
+def source_serial(nodes, name):
+    sources = [n for n in nodes if n.get("type") == "PipeWire:Interface:Node"
+               and n.get("info", {}).get("props", {}).get("node.name") == name]
+    if len(sources) != 1:
+        raise ValueError("choose exactly one existing microphone node.name from pw-dump")
+    p = sources[0]["info"]["props"]
+    if p.get("media.class") != "Audio/Source" or p.get("node.name", "").startswith("aurora.capture."):
+        raise ValueError("target must be a microphone Audio/Source, not a sink, monitor or this filter")
+    serial = p.get("object.serial")
+    if isinstance(serial, bool) or not str(serial).isdigit():
+        raise ValueError("source has no valid object.serial")
+    return str(serial)
+
+
+def config(serial, model, plugin):
+    # JSON is valid PipeWire SPA-JSON. Every interpolated string is JSON escaped.
+    if not str(serial).isdigit() or model not in ("rnnoise", "df3"):
+        raise ValueError("invalid source/model")
+    return json.dumps({
+        "context.properties": {"log.level": 2, "core.daemon": False},
+        "context.spa-libs": {
+            "audio.convert.*": "audioconvert/libspa-audioconvert",
+            "support.*": "support/libspa-support"},
+        "context.modules": [
+            {"name": "libpipewire-module-rt", "flags": ["ifexists", "nofail"]},
+            {"name": "libpipewire-module-protocol-native"},
+            {"name": "libpipewire-module-client-node"},
+            {"name": "libpipewire-module-adapter"},
+            {"name": "libpipewire-module-filter-chain", "args": {
+                "node.description": f"Aurora Microphone ({model})",
+                "media.name": "Aurora capture noise suppression",
+                "audio.rate": 48000, "audio.channels": 1, "audio.position": ["MONO"],
+                "filter.graph": {"nodes": [{"type": "ladspa", "name": "ns",
+                    "plugin": str(plugin), "label": f"aurora_{model}"}],
+                    "inputs": ["ns:Input"], "outputs": ["ns:Output"]},
+                "capture.props": {
+                    "node.name": f"aurora.capture.input.{model}",
+                    "node.latency": "480/48000",
+                    "target.object": str(serial), "node.passive": True,
+                    "node.dont-fallback": True, "node.dont-reconnect": True,
+                    "stream.capture.sink": False, "stream.dont-remix": True},
+                # PipeWire calls the output side of a filter playback.props.
+                # Audio/Source exports capture ports; autoconnect is disabled.
+                "playback.props": {
+                    "node.name": f"aurora.capture.source.{model}",
+                    "node.latency": "480/48000",
+                    "media.class": "Audio/Source", "node.virtual": True,
+                    "node.autoconnect": False, "priority.session": 0,
+                    "priority.driver": 0, "stream.dont-remix": True}
+            }}]
+    }, indent=2)
+
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--source", required=True, help="explicit microphone node.name, never a default")
+    p.add_argument("--model", choices=("rnnoise", "df3"), required=True)
+    p.add_argument("--plugin", type=Path, default=Path("/usr/local/lib/ladspa/libaurora_capture_ns.so"))
+    p.add_argument("--print-config", action="store_true", help="validate source and print config without loading it")
+    a = p.parse_args()
+    try:
+        nodes = json.loads(subprocess.check_output(["pw-dump"], text=True))
+        text = config(source_serial(nodes, a.source), a.model, a.plugin.resolve())
+    except (ValueError, subprocess.CalledProcessError) as e:
+        p.error(str(e))
+    if a.print_config:
+        print(text)
+        return
+    if not a.plugin.is_file():
+        p.error("plugin does not exist")
+    # Empty conf.d prevents the user's other filter-chain fragments from loading
+    # into this dedicated client. Normal server configuration is never reloaded.
+    with tempfile.TemporaryDirectory(prefix="aurora-capture-") as directory:
+        path = Path(directory) / "capture.conf"
+        path.write_text(text)
+        (Path(directory) / "capture.conf.d").mkdir()
+        env = dict(os.environ, PIPEWIRE_CONFIG_DIR=directory,
+                   PIPEWIRE_CONFIG_PREFIX=directory, PIPEWIRE_CONFIG_NAME="capture.conf",
+                   PIPEWIRE_DAEMON="0")
+        child = subprocess.Popen(["pipewire", "-c", str(path)], env=env)
+        previous = {}
+        def forward(number, _frame):
+            if child.poll() is None:
+                child.send_signal(number)
+        try:
+            for number in (signal.SIGTERM, signal.SIGINT):
+                previous[number] = signal.signal(number, forward)
+            code = child.wait()
+            if code > 0:
+                raise SystemExit(code)
+        finally:
+            if child.poll() is None:
+                child.terminate()
+                try:
+                    child.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    child.wait()
+            for number, handler in previous.items():
+                signal.signal(number, handler)
+
+
+if __name__ == "__main__":
+    main()
