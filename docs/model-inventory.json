@@ -1,0 +1,238 @@
+{
+  "df_archive_sha256": "c94d91f70911001c946e0fabb4aa9adc37045f45a03b56008cb0c8244cb63616",
+  "df_graphs": [
+    {
+      "file": "tmp/export/enc.onnx",
+      "sha256": "7c5399d3da8a50ebef1c1a0ae421b33376aa5e45d0e92df16da7e83c9c131916",
+      "ops": {
+        "Add": 3,
+        "Cast": 2,
+        "Concat": 11,
+        "Constant": 58,
+        "ConstantOfShape": 3,
+        "Conv": 11,
+        "Einsum": 3,
+        "GRU": 1,
+        "Gather": 7,
+        "MatMul": 1,
+        "Mul": 1,
+        "Pad": 2,
+        "Relu": 9,
+        "Reshape": 12,
+        "Shape": 9,
+        "Sigmoid": 1,
+        "Slice": 7,
+        "Squeeze": 1,
+        "Transpose": 6,
+        "Unsqueeze": 7
+      },
+      "recurrent": [
+        {
+          "name": "/emb_gru/GRU",
+          "op": "GRU",
+          "inputs": [
+            "/emb_gru/Transpose_output_0",
+            "/emb_gru/Constant_3_output_0",
+            "/emb_gru/Constant_4_output_0",
+            "/emb_gru/Constant_5_output_0",
+            "",
+            "/emb_gru/ConstantOfShape_output_0"
+          ],
+          "hidden_size": 256,
+          "emitted": true,
+          "directory": "enc-cell-124",
+          "primitives": {
+            "matmul": 6,
+            "add": 11,
+            "sigmoid": 2,
+            "mul": 4,
+            "tanh": 1
+          }
+        }
+      ]
+    },
+    {
+      "file": "tmp/export/erb_dec.onnx",
+      "sha256": "ab669a1d10afe20911728b33053a452071042317a90581092b325da7b2f9d895",
+      "ops": {
+        "Add": 4,
+        "Concat": 6,
+        "Constant": 35,
+        "ConstantOfShape": 1,
+        "Conv": 9,
+        "ConvTranspose": 2,
+        "Einsum": 2,
+        "GRU": 2,
+        "Gather": 8,
+        "Relu": 9,
+        "Reshape": 5,
+        "Shape": 6,
+        "Sigmoid": 1,
+        "Slice": 4,
+        "Squeeze": 2,
+        "Transpose": 3,
+        "Unsqueeze": 8
+      },
+      "recurrent": [
+        {
+          "name": "/emb_gru/GRU",
+          "op": "GRU",
+          "inputs": [
+            "/emb_gru/Transpose_output_0",
+            "/emb_gru/Constant_3_output_0",
+            "/emb_gru/Constant_4_output_0",
+            "/emb_gru/Constant_5_output_0",
+            "",
+            "/emb_gru/Slice_output_0"
+          ],
+          "hidden_size": 256,
+          "emitted": true,
+          "directory": "erb_dec-cell-44",
+          "primitives": {
+            "matmul": 6,
+            "add": 11,
+            "sigmoid": 2,
+            "mul": 4,
+            "tanh": 1
+          }
+        },
+        {
+          "name": "/emb_gru/GRU_1",
+          "op": "GRU",
+          "inputs": [
+            "/emb_gru/Squeeze_output_0",
+            "/emb_gru/Constant_9_output_0",
+            "/emb_gru/Constant_10_output_0",
+            "/emb_gru/Constant_11_output_0",
+            "",
+            "/emb_gru/Slice_1_output_0"
+          ],
+          "hidden_size": 256,
+          "emitted": true,
+          "directory": "erb_dec-cell-53",
+          "primitives": {
+            "matmul": 6,
+            "add": 11,
+            "sigmoid": 2,
+            "mul": 4,
+            "tanh": 1
+          }
+        }
+      ]
+    },
+    {
+      "file": "tmp/export/df_dec.onnx",
+      "sha256": "23114ce3b0f6464b763ee62f7bb8aab6b2a129a21eabd5bcfe59413db05f278a",
+      "ops": {
+        "Add": 3,
+        "Cast": 1,
+        "Concat": 9,
+        "Constant": 42,
+        "ConstantOfShape": 2,
+        "Conv": 2,
+        "Einsum": 3,
+        "GRU": 2,
+        "Gather": 5,
+        "MatMul": 1,
+        "Pad": 1,
+        "Relu": 2,
+        "Reshape": 9,
+        "Shape": 8,
+        "Sigmoid": 1,
+        "Slice": 6,
+        "Squeeze": 2,
+        "Tanh": 1,
+        "Transpose": 4,
+        "Unsqueeze": 9
+      },
+      "recurrent": [
+        {
+          "name": "/df_gru/gru/GRU",
+          "op": "GRU",
+          "inputs": [
+            "/df_gru/gru/Transpose_output_0",
+            "onnx::GRU_291",
+            "onnx::GRU_292",
+            "onnx::GRU_293",
+            "",
+            "/df_gru/gru/Slice_output_0"
+          ],
+          "hidden_size": 256,
+          "emitted": true,
+          "directory": "df_dec-cell-35",
+          "primitives": {
+            "matmul": 6,
+            "add": 11,
+            "sigmoid": 2,
+            "mul": 4,
+            "tanh": 1
+          }
+        },
+        {
+          "name": "/df_gru/gru/GRU_1",
+          "op": "GRU",
+          "inputs": [
+            "/df_gru/gru/Squeeze_output_0",
+            "onnx::GRU_311",
+            "onnx::GRU_312",
+            "onnx::GRU_313",
+            "",
+            "/df_gru/gru/Slice_1_output_0"
+          ],
+          "hidden_size": 256,
+          "emitted": true,
+          "directory": "df_dec-cell-41",
+          "primitives": {
+            "matmul": 6,
+            "add": 11,
+            "sigmoid": 2,
+            "mul": 4,
+            "tanh": 1
+          }
+        }
+      ]
+    }
+  ],
+  "rnnoise_cells": [
+    {
+      "name": "vad_gru",
+      "input": 24,
+      "hidden": 24,
+      "candidate": "relu",
+      "primitives": {
+        "matmul": 6,
+        "add": 11,
+        "sigmoid": 2,
+        "mul": 4,
+        "relu": 1
+      }
+    },
+    {
+      "name": "noise_gru",
+      "input": 90,
+      "hidden": 48,
+      "candidate": "relu",
+      "primitives": {
+        "matmul": 6,
+        "add": 11,
+        "sigmoid": 2,
+        "mul": 4,
+        "relu": 1
+      }
+    },
+    {
+      "name": "denoise_gru",
+      "input": 114,
+      "hidden": 96,
+      "candidate": "relu",
+      "primitives": {
+        "matmul": 6,
+        "add": 11,
+        "sigmoid": 2,
+        "mul": 4,
+        "relu": 1
+      }
+    }
+  ],
+  "rnnoise_source_sha256": "7b90ed18f065a34597d80b4c00e140a7c5eb6380ef8c9c6bf265384c944ae708"
+}

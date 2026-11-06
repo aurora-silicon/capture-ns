@@ -1,0 +1,70 @@
+{
+  "source_commit": "67c0aae1d474654ae6ddb88b41380745b4624b6f",
+  "cpu_model": "Intel Core i9-13900K",
+  "architecture": "x86_64",
+  "kernel": "7.0.12-arch1-1",
+  "isolated_host": false,
+  "cpu_percent_units": "100 percent is one core",
+  "models": {
+    "rnnoise": {
+      "audio_seconds_including_flush": 84.94,
+      "cpu_percent_one_core": 1.0179777972686601,
+      "engine_thread_cpu_percent_one_core": 0.9846922368730868,
+      "hop_p50_range_ms": [
+        0.078173,
+        0.129725
+      ],
+      "worst_clip_hop_p99_ms": 0.3805991800000002,
+      "maximum_hop_ms": 0.480921,
+      "deadline_misses_10ms": 0,
+      "cpu_calls": 8494,
+      "native_calls": 0,
+      "failed_calls": 0,
+      "init_range_ms": [
+        3.045729,
+        5.531745
+      ],
+      "mean_noisy_dnsmos": {
+        "sig": 2.875598307986022,
+        "bak": 1.7130741316554186,
+        "ovrl": 1.7569460524008262
+      },
+      "mean_enhanced_dnsmos": {
+        "sig": 3.167390778767751,
+        "bak": 3.5921685794465166,
+        "ovrl": 2.7449361105759627
+      },
+      "raw_receipt_sha256": "0343116298647bf27df2beec1abd37e0fda5a2837442f492e2f9632b872ec89f"
+    },
+    "df3": {
+      "audio_seconds_including_flush": 84.94,
+      "cpu_percent_one_core": 5.915087820814692,
+      "engine_thread_cpu_percent_one_core": 5.802848839180598,
+      "hop_p50_range_ms": [
+        0.4290995,
+        1.101732
+      ],
+      "worst_clip_hop_p99_ms": 1.8394880500000002,
+      "maximum_hop_ms": 2.15709,
+      "deadline_misses_10ms": 0,
+      "cpu_calls": 8494,
+      "native_calls": 0,
+      "failed_calls": 0,
+      "init_range_ms": [
+        190.587737,
+        357.926943
+      ],
+      "mean_noisy_dnsmos": {
+        "sig": 2.875598307986022,
+        "bak": 1.7130741316554186,
+        "ovrl": 1.7569460524008262
+      },
+      "mean_enhanced_dnsmos": {
+        "sig": 3.4292257592783915,
+        "bak": 4.101850073661035,
+        "ovrl": 3.1755237987781193
+      },
+      "raw_receipt_sha256": "6d7080665b5968c2001b2ef0cb1600973b9787b6ad79692b6f0bccad0f3503ca"
+    }
+  }
+}
